@@ -28,15 +28,13 @@ sheet = client.open("Stock Analysis NSE Python")
 
 worksheet = sheet.worksheet("Final List")
 
-today = "08052026"
+#today = "08MAY2026"
 
-url = f"https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_{today}_F_0000.csv.zip"
+url = f"https://archives.nseindia.com/content/historical/EQUITIES/2026/MAY/cm08MAY2026bhav.csv.zip"
+
+print(url)
 
 zip_file = "bhavcopy.zip"
-
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
 
 session = requests.Session()
 

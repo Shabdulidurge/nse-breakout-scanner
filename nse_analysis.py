@@ -58,6 +58,8 @@ if response.status_code == 200 and 'application/zip' in response.headers.get('Co
 
     with open(zip_file, "wb") as file:
         file.write(response.content)
+    with ZipFile(zip_file, 'r') as zip_ref:
+        zip_ref.extractall()
 
 else:
     raise Exception(

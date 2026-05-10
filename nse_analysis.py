@@ -6,7 +6,8 @@ import gspread
 
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Google Credentials
+# ---------------- GOOGLE SHEETS AUTH ---------------- #
+
 google_credentials_json = os.environ['GOOGLE_CREDENTIALS']
 
 scope = [
@@ -23,47 +24,101 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 
 client = gspread.authorize(creds)
 
-# Open Sheet
+# ---------------- OPEN GOOGLE SHEET ---------------- #
+
 sheet = client.open("Stock Analysis NSE Python")
 
 worksheet = sheet.worksheet("Final List")
 
-# NSE Stock List
+# ---------------- NIFTY 50 STOCKS ---------------- #
+
 stocks = [
-    "RELIANCE.NS",
-    "TCS.NS",
-    "INFY.NS",
-    "HDFCBANK.NS",
-    "ICICIBANK.NS",
-    "SBIN.NS",
-    "ITC.NS",
-    "LT.NS",
+    "ADANIENT.NS",
+    "ADANIPORTS.NS",
+    "APOLLOHOSP.NS",
+    "ASIANPAINT.NS",
+    "AXISBANK.NS",
+    "BAJAJ-AUTO.NS",
+    "BAJFINANCE.NS",
+    "BAJAJFINSV.NS",
+    "BEL.NS",
     "BHARTIARTL.NS",
-    "KOTAKBANK.NS"
+    "BPCL.NS",
+    "BRITANNIA.NS",
+    "CIPLA.NS",
+    "COALINDIA.NS",
+    "DRREDDY.NS",
+    "EICHERMOT.NS",
+    "ETERNAL.NS",
+    "GRASIM.NS",
+    "HCLTECH.NS",
+    "HDFCBANK.NS",
+    "HDFCLIFE.NS",
+    "HEROMOTOCO.NS",
+    "HINDALCO.NS",
+    "HINDUNILVR.NS",
+    "ICICIBANK.NS",
+    "INDUSINDBK.NS",
+    "INFY.NS",
+    "ITC.NS",
+    "JIOFIN.NS",
+    "JSWSTEEL.NS",
+    "KOTAKBANK.NS",
+    "LT.NS",
+    "M&M.NS",
+    "MARUTI.NS",
+    "NESTLEIND.NS",
+    "NTPC.NS",
+    "ONGC.NS",
+    "POWERGRID.NS",
+    "RELIANCE.NS",
+    "SBILIFE.NS",
+    "SBIN.NS",
+    "SHRIRAMFIN.NS",
+    "SUNPHARMA.NS",
+    "TATACONSUM.NS",
+    "TATAMOTORS.NS",
+    "TATASTEEL.NS",
+    "TCS.NS",
+    "TECHM.NS",
+    "TITAN.NS",
+    "ULTRACEMCO.NS",
+    "WIPRO.NS"
 ]
+
+# ---------------- FETCH LIVE DATA ---------------- #
 
 data_list = []
 
 for stock in stocks:
 
-    ticker = yf.Ticker(stock)
+    try:
 
-    hist = ticker.history(period="5d")
+        ticker = yf.Ticker(stock)
 
-    if not hist.empty:
+        hist = ticker.history(period="1d")
 
-        latest = hist.iloc[-1]
+        if not hist.empty:
 
-        data_list.append([
-            stock.replace(".NS", ""),
-            latest['Open'],
-            latest['High'],
-            latest['Low'],
-            latest['Close'],
-            latest['Volume']
-        ])
+            latest = hist.iloc[-1]
 
-# Create DataFrame
+            data_list.append([
+                stock.replace(".NS", ""),
+                round(latest['Open'], 2),
+                round(latest['High'], 2),
+                round(latest['Low'], 2),
+                round(latest['Close'], 2),
+                int(latest['Volume'])
+            ])
+
+            print(f"Fetched: {stock}")
+
+    except Exception as e:
+
+        print(f"Error in {stock}: {e}")
+
+# ---------------- CREATE DATAFRAME ---------------- #
+
 df = pd.DataFrame(data_list, columns=[
     'SYMBOL',
     'OPEN_PRICE',
@@ -73,18 +128,21 @@ df = pd.DataFrame(data_list, columns=[
     'TOTTRDQTY'
 ])
 
-# Sort by Volume
+# ---------------- SORT BY VOLUME ---------------- #
+
 top_stocks = df.sort_values(
     by='TOTTRDQTY',
     ascending=False
-)
+).head(50)
 
-# Prepare Google Sheets Data
+# ---------------- PREPARE GOOGLE SHEETS DATA ---------------- #
+
 sheet_data = [top_stocks.columns.tolist()] + top_stocks.values.tolist()
 
-# Update Sheet
+# ---------------- UPDATE GOOGLE SHEET ---------------- #
+
 worksheet.clear()
 
 worksheet.update("A1", sheet_data)
 
-print("Yahoo Finance NSE Data Updated Successfully")
+print("Top 50 NSE Stocks Updated Successfully")

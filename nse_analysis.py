@@ -34,11 +34,21 @@ stocks = nsefetch(
     "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20250"
 )
 
-print(stocks)
-
+# Convert to DataFrame
 df = pd.DataFrame(stocks)
 
-# Select Required Columns
+# DEBUG OUTPUT
+print(df.head())
+print(df.columns)
+
+# Try extracting rows if nested
+if 'data' in df.columns:
+    df = pd.DataFrame(df['data'][0])
+
+    print(df.head())
+    print(df.columns)
+
+# Select Columns
 df = df[[
     'symbol',
     'open',
@@ -64,7 +74,7 @@ top_stocks = df.sort_values(
     ascending=False
 ).head(50)
 
-# Convert Data for Google Sheets
+# Prepare Data
 data = [top_stocks.columns.tolist()] + top_stocks.values.tolist()
 
 # Update Google Sheet

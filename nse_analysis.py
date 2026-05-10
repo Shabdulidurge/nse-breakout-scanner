@@ -1,10 +1,10 @@
 import os
 import json
 import pandas as pd
+import requests
 import gspread
 
 from oauth2client.service_account import ServiceAccountCredentials
-from nsepython import *
 
 # Read credentials from GitHub Secrets
 google_credentials_json = os.environ['GOOGLE_CREDENTIALS']
@@ -29,26 +29,33 @@ sheet = client.open("Stock Analysis NSE Python")
 
 worksheet = sheet.worksheet("Final List")
 
-# Fetch NSE Data
-stocks = nsefetch(
-    "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20250"
-)
+# NSE Session
+session = requests.Session()
 
-# Convert to DataFrame
-df = pd.DataFrame(stocks)
+headers = {
+    "User-Agent": "Mozilla/5.0",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.nseindia.com/"
+}
 
-# DEBUG OUTPUT
-print(df.head())
-print(df.columns)
+# Open NSE homepage first
+session.get("https://www.nseindia.com", headers=headers)
 
-# Try extracting rows if nested
-if 'data' in df.columns:
-    df = pd.DataFrame(df['data'][0])
+# Fetch NSE stock data
+url = "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20250"
 
-    print(df.head())
-    print(df.columns)
+response = session.get(url, headers=headers)
 
-# Select Columns
+print(response.status_code)
+
+data_json = response.json()
+
+print(data_json.keys())
+
+# Convert data to dataframe
+df = pd.DataFrame(data_json['data'])
+
+# Select required columns
 df = df[[
     'symbol',
     'open',
@@ -58,7 +65,7 @@ df = df[[
     'totalTradedVolume'
 ]]
 
-# Rename Columns
+# Rename columns
 df.columns = [
     'SYMBOL',
     'OPEN_PRICE',
@@ -68,17 +75,17 @@ df.columns = [
     'TOTTRDQTY'
 ]
 
-# Sort by Volume
+# Sort by traded volume
 top_stocks = df.sort_values(
     by='TOTTRDQTY',
     ascending=False
 ).head(50)
 
-# Prepare Data
-data = [top_stocks.columns.tolist()] + top_stocks.values.tolist()
+# Prepare for Sheets
+sheet_data = [top_stocks.columns.tolist()] + top_stocks.values.tolist()
 
 # Update Google Sheet
 worksheet.clear()
-worksheet.update("A1", data)
+worksheet.update("A1", sheet_data)
 
 print("NSE Data Updated Successfully")

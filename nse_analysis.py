@@ -30,7 +30,7 @@ worksheet = sheet.worksheet("Final List")
 
 #today = "08MAY2026"
 
-url = f"https://archives.nseindia.com/content/historical/EQUITIES/2026/MAY/cm08MAY2025bhav.csv.zip"
+url = f"https://archives.nseindia.com/content/historical/EQUITIES/2025/MAY/cm08MAY2025bhav.csv.zip"
 
 print(url)
 

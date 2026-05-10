@@ -38,13 +38,31 @@ headers = {
     "User-Agent": "Mozilla/5.0"
 }
 
-response = requests.get(url, headers=headers)
+session = requests.Session()
 
-with open(zip_file, "wb") as file:
-    file.write(response.content)
+headers = {
+    "User-Agent": "Mozilla/5.0",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.nseindia.com/"
+}
 
-with ZipFile(zip_file, 'r') as zip_ref:
-    zip_ref.extractall()
+# First visit NSE homepage
+session.get("https://www.nseindia.com", headers=headers)
+
+# Download bhavcopy
+response = session.get(url, headers=headers)
+
+# Check if download successful
+if response.status_code == 200 and 'application/zip' in response.headers.get('Content-Type', ''):
+
+    with open(zip_file, "wb") as file:
+        file.write(response.content)
+
+else:
+    raise Exception(
+        f"Failed to download ZIP. Status: {response.status_code}, Content-Type: {response.headers.get('Content-Type')}"
+    )
 
 csv_file = [f for f in os.listdir() if f.endswith(".csv")][0]
 

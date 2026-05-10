@@ -34,7 +34,11 @@ url = f"https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_{today
 
 zip_file = "bhavcopy.zip"
 
-response = requests.get(url)
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+response = requests.get(url, headers=headers)
 
 with open(zip_file, "wb") as file:
     file.write(response.content)

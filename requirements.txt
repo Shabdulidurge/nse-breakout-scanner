@@ -1,5 +1,4 @@
 pandas
 gspread
 oauth2client
-nsepython
 requests

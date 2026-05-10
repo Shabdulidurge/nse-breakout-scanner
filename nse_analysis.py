@@ -46,7 +46,7 @@ headers = {
 }
 
 # First visit NSE homepage
-session.get("https://www.nseindia.com", headers=headers)
+session.get("https://archives.nseindia.com", headers=headers)
 
 # Download bhavcopy
 response = session.get(url, headers=headers)

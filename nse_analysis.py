@@ -34,7 +34,9 @@ stocks = nsefetch(
     "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20250"
 )
 
-df = pd.DataFrame(stocks['data'])
+print(stocks)
+
+df = pd.DataFrame(stocks)
 
 # Select Required Columns
 df = df[[

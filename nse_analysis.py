@@ -1,15 +1,14 @@
 import os
 import json
 import pandas as pd
-import requests
+import yfinance as yf
 import gspread
 
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Read credentials from GitHub Secrets
+# Google Credentials
 google_credentials_json = os.environ['GOOGLE_CREDENTIALS']
 
-# Google Sheets Authentication
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive"
@@ -24,68 +23,68 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 
 client = gspread.authorize(creds)
 
-# Open Google Sheet
+# Open Sheet
 sheet = client.open("Stock Analysis NSE Python")
 
 worksheet = sheet.worksheet("Final List")
 
-# NSE Session
-session = requests.Session()
+# NSE Stock List
+stocks = [
+    "RELIANCE.NS",
+    "TCS.NS",
+    "INFY.NS",
+    "HDFCBANK.NS",
+    "ICICIBANK.NS",
+    "SBIN.NS",
+    "ITC.NS",
+    "LT.NS",
+    "BHARTIARTL.NS",
+    "KOTAKBANK.NS"
+]
 
-headers = {
-    "User-Agent": "Mozilla/5.0",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.nseindia.com/"
-}
+data_list = []
 
-# Open NSE homepage first
-session.get("https://www.nseindia.com", headers=headers)
+for stock in stocks:
 
-# Fetch NSE stock data
-url = "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20250"
+    ticker = yf.Ticker(stock)
 
-response = session.get(url, headers=headers)
+    hist = ticker.history(period="5d")
 
-print(response.status_code)
+    if not hist.empty:
 
-data_json = response.json()
+        latest = hist.iloc[-1]
 
-print(data_json.keys())
+        data_list.append([
+            stock.replace(".NS", ""),
+            latest['Open'],
+            latest['High'],
+            latest['Low'],
+            latest['Close'],
+            latest['Volume']
+        ])
 
-# Convert data to dataframe
-df = pd.DataFrame(data_json['data'])
-
-# Select required columns
-df = df[[
-    'symbol',
-    'open',
-    'dayHigh',
-    'dayLow',
-    'lastPrice',
-    'totalTradedVolume'
-]]
-
-# Rename columns
-df.columns = [
+# Create DataFrame
+df = pd.DataFrame(data_list, columns=[
     'SYMBOL',
     'OPEN_PRICE',
     'HIGH_PRICE',
     'LOW_PRICE',
     'CLOSE_PRICE',
     'TOTTRDQTY'
-]
+])
 
-# Sort by traded volume
+# Sort by Volume
 top_stocks = df.sort_values(
     by='TOTTRDQTY',
     ascending=False
-).head(50)
+)
 
-# Prepare for Sheets
+# Prepare Google Sheets Data
 sheet_data = [top_stocks.columns.tolist()] + top_stocks.values.tolist()
 
-# Update Google Sheet
+# Update Sheet
 worksheet.clear()
+
 worksheet.update("A1", sheet_data)
 
-print("NSE Data Updated Successfully")
+print("Yahoo Finance NSE Data Updated Successfully")

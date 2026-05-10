@@ -28,7 +28,7 @@ sheet = client.open("Stock Analysis NSE Python")
 
 worksheet = sheet.worksheet("Final List")
 
-today = "09052026"
+today = "08052026"
 
 url = f"https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_{today}_F_0000.csv.zip"
 

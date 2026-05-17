@@ -44,7 +44,7 @@ client = gspread.authorize(creds)
 
 spreadsheet_id = "1j1yjepGneUhHyhnMJGQ1s7YEfS4B78XT_IERrkYP1Oc" 
 
-worksheet = client.open_by_key(spreadsheet_id).worksheet("Final List")वॉल्यूम डेटा टूल
+worksheet = client.open_by_key(spreadsheet_id).worksheet("Final List")
 
 
 

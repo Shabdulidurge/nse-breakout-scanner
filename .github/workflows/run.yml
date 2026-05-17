@@ -6,6 +6,9 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: excel-sheet-update
+  cancel-in-progress: false
 jobs:
   run-script:
     runs-on: ubuntu-latest
